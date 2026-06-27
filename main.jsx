@@ -1,15 +1,11 @@
-import React from "react"
-import ReactDOM from "react-dom/client"
-import GamberValleyMIS from './GamberValleyMIS_Final (1).jsx';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+// Import your actual file name here
+import GamberValleyMIS from './GamberValleyMIS_Final (1).jsx'
 
-const rootElement = document.getElementById("root")
-
-if (!rootElement) {
-  throw new Error("Failed to find the root element. Make sure it exists in your index.html")
-}
-
-ReactDOM.createRoot(rootElement).render(
+ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <App />
-  </React.StrictMode>
+    {/* Render the actual imported component name instead of App */}
+    <GamberValleyMIS />
+  </React.StrictMode>,
 )
