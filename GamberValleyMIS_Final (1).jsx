@@ -748,16 +748,16 @@ function AIPanel() {
     setQ(""); setBusy(true);
     setLog(function(l){ return l.concat([{role:"user",text:text}]); });
     try {
-      var res = await fetch("https://api.anthropic.com/v1/messages", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:"claude-sonnet-4-6",
-          max_tokens:1024,
-          system:buildSYS(),
-          messages:[{role:"user",content:text}]
-        })
-      });
+      var res = await fetch("/api/chat", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    system: "You are an advanced data analyst assistant for the Alcobrew Distilleries India Ltd NEXUS Management Information System. Provide clear, concise, and structured operational summaries using markdown rules.",
+    messages: conversationHistory
+  })
+});
 
       // Handle non-OK HTTP status explicitly
       if (!res.ok) {
