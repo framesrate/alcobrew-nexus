@@ -742,22 +742,33 @@ function AIPanel() {
 
   useEffect(function(){ if (endRef.current) endRef.current.scrollIntoView({behavior:"smooth"}); }, [log]);
 
-  var run = async function(question) {
+ var run = async function(question) {
     var text = question || q.trim();
     if (!text || busy) return;
     setQ(""); setBusy(true);
-    setLog(function(l){ return l.concat([{role:"user",text:text}]); });
+    
+    // Create the updated log array with the new user message included
+    var updatedLog = log.concat([{role:"user",text:text}]);
+    setLog(updatedLog);
+    
     try {
+      // Map your custom log array into the format Anthropic expects: { role, content }
+      var formattedMessages = updatedLog.map(function(item) {
+        return {
+          role: item.role === "ai" ? "assistant" : "user",
+          content: item.text
+        };
+      });
+
+      // Reroute safely through your Vercel serverless function
       var res = await fetch("/api/chat", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    system: "You are an advanced data analyst assistant for the Alcobrew Distilleries India Ltd NEXUS Management Information System. Provide clear, concise, and structured operational summaries using markdown rules.",
-    messages: conversationHistory
-  })
-});
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          system: buildSYS(),
+          messages: formattedMessages
+        })
+      });
 
       // Handle non-OK HTTP status explicitly
       if (!res.ok) {
@@ -783,14 +794,10 @@ function AIPanel() {
 
     } catch(e) {
       var msg = e.message || "Unknown error";
-      // Show specific, helpful error messages
-      if (msg.includes("401")) msg = "API key issue — check Anthropic API access.";
-      else if (msg.includes("429")) msg = "Rate limited — wait a moment and try again.";
-      else if (msg.includes("500") || msg.includes("529")) msg = "Anthropic service busy — try again in a few seconds.";
-      else if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) msg = "Network error — check your internet connection.";
-      setLog(function(l){ return l.concat([{role:"ai",text:msg,err:true}]); });
+      setLog(function(l){ return l.concat([{role:"ai",text:"Error: " + msg}]); });
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
   };
 
   var presets = [
